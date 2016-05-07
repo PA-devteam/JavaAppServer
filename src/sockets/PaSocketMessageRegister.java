@@ -1,14 +1,5 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package sockets;
 
-/**
- *
- * @author florian
- */
 public class PaSocketMessageRegister extends PaSocketMessage {
 
     private String userFirstName;
@@ -79,5 +70,4 @@ public class PaSocketMessageRegister extends PaSocketMessage {
         this.userConfirmPassword = userConfirmPassword;
         this.userEmail = userEmail;
     }
-
 }

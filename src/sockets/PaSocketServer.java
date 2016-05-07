@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package sockets;
 
 import java.io.IOException;
@@ -11,10 +6,6 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-/**
- *
- * @author florian
- */
 public class PaSocketServer extends Thread implements Runnable {
 
     private ServerSocket srv;
@@ -44,11 +35,11 @@ public class PaSocketServer extends Thread implements Runnable {
                 // Create client socket
                 Socket client = this.srv.accept();
                 System.out.println("Client received");
-                
-                PaSocketClient paclient=new PaSocketClient(client);
-                paclient.start();
 
-             
+                // Intialise socket client handler
+                PaSocketClient paClient = new PaSocketClient(client);
+                // Start socket client handler
+                paClient.start();
             } catch (IOException e) {
                 System.err.println(e);
             }

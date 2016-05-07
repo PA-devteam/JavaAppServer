@@ -1,189 +1,165 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package sockets;
 
-import app.DbManager;
-import java.io.BufferedInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
-import java.io.PrintWriter;
+import database.DbManager;
+import java.io.*;
 import java.net.Socket;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.sql.*;
+import security.BCrypt; // http://www.mindrot.org/projects/jBCrypt/
+import app.User;
 
-/**
- *
- * @author florian
- */
 public class PaSocketClient extends Thread implements Runnable {
-    
+
     private Socket sock;
-    private PrintWriter writer;
-    private BufferedInputStream reader;
-    
     private ObjectOutputStream objectWriter;
     private ObjectInputStream objectReader;
     private String nameTest;
 
     public PaSocketClient() {
-        this.init();        
+        this.init();
     }
-    
+
     public PaSocketClient(Socket pSocket) {
         this.init();
         this.sock = pSocket;
     }
-    
-   
-    
+
     private void init() {
-        // Init writer and reader for String communication
-        this.writer = null;
-        this.reader = null;
-        
         // Init writer and reader for Object communication
         this.objectWriter = null;
         this.objectReader = null;
     }
-    
 
     @Override
- public void run() {
+    public void run() {
         try {
-          
-            // Initialise stream handlers
-            initStreamHandlers(true);
-            
-            // Construct message
-            /*SocketMessage msg = new SocketMessage();
-            msg.setMessage("Hello server");*/
-            
-            // Send response to server            
-            //this.sendObject(msg);
-            
-            //On attend la réponse
-            Object psm = (Object)this.readObject();
-            PaSocketMessage message=(PaSocketMessage)psm;
-           
-           
-            switch(message.getAction()){ 
+            // Initialise stream handlers for read & send actions
+            initStreamHandlers();
+
+            // Waiting message from client
+            PaSocketMessage message = (PaSocketMessage) this.readObject();
+
+            // Get action from client message
+            PaSocketAction action = message.getAction();
+
+            // Initialise new socket reponse
+            PaSocketResponse response = new PaSocketResponse();
+
+            // Handle action
+            switch (action) {
                 case LOGIN:
-                    PaSocketMessageLogin login=(PaSocketMessageLogin) message;
-                    String usrname=login.getUserName();
-                    String request="SELECT username from USERS WHERE username='"+usrname+"'";
-                    try {
-                    // Initialise SQL statement
-                    Statement stmt = DbManager.conn.createStatement();
+                    // Case message to specific case message
+                    PaSocketMessageLogin login = (PaSocketMessageLogin) message;
 
-                    // E.g. : DROP TABLE
-                    //stmt.executeUpdate( "DROP TABLE table1" );
-                    // E.g. : CREATE TABLE
-                    //stmt.executeUpdate( "CREATE TABLE table1 ( user varchar(50) )" );
-                    // E.g. : INSERT DATA
-                    //stmt.executeUpdate( "INSERT INTO table1 ( user ) VALUES ( 'Claudio' )" );   
+                    // Get username from message
+                    String username = login.getUserName();
+                    // Get password from message
+                    String password = login.getUserPassword();
 
-                    // Execute SQL query from SQL statement
-                    ResultSet rs = stmt.executeQuery(request);
-                    String responseContent="";
-                    // Process data from SQL result set
-                    while( rs.next() ) {
-                        String name = rs.getString("username");
-                        
-                        if(responseContent != null) {
-                            responseContent = responseContent + "," + name;
-                        } else {
-                            responseContent = name;
+                    // Check message parameters
+                    if(username.length() > 0 && password.length() > 0) {
+                        // Hash received password
+                        String hashed = BCrypt.hashpw(password, BCrypt.gensalt());
+
+                        try {
+                            // Create SQL request
+                            String request = "SELECT firstname,lastname,username,createDate,update,isActive,isDeleted FROM USERS WHERE username='" + username + "'";
+
+                            // Initialise SQL statement
+                            Statement stmt = DbManager.conn.createStatement();
+
+                            // Execute SQL query from SQL statement
+                            ResultSet rs = stmt.executeQuery(request);
+
+                            User usr = new User();
+                            String usrHashed = "";
+
+                            // Process data from SQL result set
+                            while (rs.next()) {
+                                // Build new User entity
+                                usr.setUsername(rs.getString("firstname"));
+                                usr.setUsername(rs.getString("lastname"));
+                                usr.setCreateDate(rs.getDate("createDate"));
+                                usr.setUpdate(rs.getDate("update"));
+                                usr.setIsActive(rs.getBoolean("isActive"));
+                                usr.setIsDeleted(rs.getBoolean("isDeleted"));
+                                
+                                // Get hashed password from db
+                                usrHashed = rs.getString("password");
+                            }
+
+                            // Close statement
+                            stmt.close();
+
+                            // Check if the user is active and not marked as deleted
+                            if(usr.getIsActive() && !usr.getIsDeleted()) {
+                                // Check if hashed password match the one from db
+                                if (BCrypt.checkpw(usrHashed, hashed)) {                                
+                                    response.setContent(usr);
+                                } else {
+                                    response.addError("Username or password does not match");
+                                }
+                            } else {
+                                // Otherwise, user is not available
+                                response.addError("Cannot find user '" + usr.getUsername() + "'");
+                            }
+                        } catch (SQLException e) {
+                            System.err.println(e);
+                            response.addError("An error has occured while gathering user from database");
                         }
-
-                        System.out.println( "    " + name );
+                    } else {
+                        response.addError("Incorrect parameters");
                     }
-
-                    // Close statement
-                    stmt.close();                
-                } catch(SQLException e) {
-                    System.err.println(e);
-                }
+                    break;
+                case REGISTER:
+                    // @TODO : handle register process
                     break;
                 default:
-                    System.out.println("Passe ici");
+                    System.err.println("ACTION '" + action + "' NOT SUPPORTED");
+                    response.addError("Unsupported action '" + action + "'");
                     break;
             }
-            //Envoi chez le client
-            this.sendObject(message);
-            // Handle server response
-            //} catch(IOException|ClassNotFoundException e) {
-            // System.err.println(e);
-            //}
-        } catch (IOException|ClassNotFoundException e) {
-//            Logger.getLogger(PaSocketClient.class.getName()).log(Level.SEVERE, null, ex);
+
+            // Send response to client
+            this.sendObject(response);
+        } catch (IOException | ClassNotFoundException e) {
             System.err.println(e);
         }
- }
-    private void initStreamHandlers(Boolean pFlushWriter) throws IOException {
+    }
+
+    private void initStreamHandlers() throws IOException {
         // Get output stream
         OutputStream output = this.sock.getOutputStream();
         // Get input stream
-        InputStream  input  = this.sock.getInputStream();
+        InputStream input = this.sock.getInputStream();
 
-        // Init writer and reader for String communication
-        this.writer = new PrintWriter(output, pFlushWriter);
-        this.reader = new BufferedInputStream(input);
-        
         // Init writer and reader for Object communication
         this.objectWriter = new ObjectOutputStream(output);
         this.objectReader = new ObjectInputStream(input);
     }
-    
-    private String read() throws IOException {
-        String response;
-        int inputStream;
-        byte[] b = new byte[4096];
 
-        inputStream = this.reader.read(b);
-        response    = new String(b, 0, inputStream);
-
-        System.out.println("\t * " + this.nameTest + " Received message " + response);     
-        
-        return response;         
-    }
-    
     private PaSocketMessage readObject() throws IOException, ClassNotFoundException {
+        // Declare variables
         PaSocketMessage response;
         Object msg;
-        
+
+        // Read object from stream
         msg = this.objectReader.readObject();
-        
+
+        // Cast response object
         response = (PaSocketMessage) msg;
-        
-        System.out.println("\t * " + this.nameTest + " Received message " + response.getAction());  
-        
+
+        System.out.println("\t * " + this.nameTest + " Received message " + response.getAction());
+
+        // Return response
         return response;
     }
-    
-    private void send(String pMsg) throws IOException {
-        // Write response into the buffer
-        this.writer.write(pMsg);
 
-        // Writing buffer content to the server
-        this.writer.flush();
-        
-        System.out.println(this.nameTest + " : " + pMsg);
-    }
-    
-   private void sendObject(PaSocketMessage pMsg) throws IOException {
+    private void sendObject(PaSocketMessage pMsg) throws IOException {
+        // Write object message ton send into object writer
         this.objectWriter.writeObject(pMsg);
+        // Flush the object writer to send the message
         this.objectWriter.flush();
-        
-        System.out.println(this.nameTest + " : " + pMsg.getAction());        
+
+        System.out.println(this.nameTest + " : " + pMsg.getAction());
     }
-    
 }

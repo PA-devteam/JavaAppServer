@@ -1,18 +1,9 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package app;
 
 import config.ConfigManager;
 import database.*;
 import sockets.PaSocketServer;
 
-/**
- *
- * @author florian
- */
 public class App {
 
     /**
@@ -56,7 +47,7 @@ public class App {
                                 
                 // Initialise a new socket server
                 PaSocketServer srv = new PaSocketServer(ip, port, maxCon);
-                
+                // Start the socket server
                 srv.start();                
             } else {
                 System.err.println("No database connection !");
