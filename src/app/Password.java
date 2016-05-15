@@ -1,3 +1,5 @@
+package app;
+
 /***********************************************************************
  * Module:  Password.java
  * Author:  Florian

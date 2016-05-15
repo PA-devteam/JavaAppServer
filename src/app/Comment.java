@@ -1,3 +1,5 @@
+package app;
+
 /***********************************************************************
  * Module:  Comment.java
  * Author:  Florian

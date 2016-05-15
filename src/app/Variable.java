@@ -1,3 +1,5 @@
+package app;
+
 /***********************************************************************
  * Module:  Variable.java
  * Author:  Florian

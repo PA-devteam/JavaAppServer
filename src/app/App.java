@@ -5,7 +5,7 @@
  */
 package app;
 
-import static app.DbManager.conn;
+import static database.DbManager.conn;
 import config.ConfigManager;
 import database.*;
 import java.io.FileNotFoundException;

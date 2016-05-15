@@ -1,3 +1,5 @@
+package app;
+
 /***********************************************************************
  * Module:  Equation.java
  * Author:  Florian
