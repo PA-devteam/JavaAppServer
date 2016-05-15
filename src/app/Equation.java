@@ -4,6 +4,7 @@
  * Purpose: Defines the Class Equation
  ***********************************************************************/
 
+import app.User;
 import java.util.*;
 
 /** @pdOid 55edc2fe-2156-4a24-921b-f6d2edabc311 */
