@@ -32,6 +32,7 @@ public final class DbManager {
 
     public static void close() {
         try {
+              
             conn.close();
             System.err.println("Connection to database has been closed !");
         } catch(SQLException e) {

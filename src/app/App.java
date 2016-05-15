@@ -5,8 +5,18 @@
  */
 package app;
 
+import static app.DbManager.conn;
 import config.ConfigManager;
 import database.*;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.h2.tools.RunScript;
 import sockets.PaSocketServer;
 
 /**
@@ -18,7 +28,7 @@ public class App {
     /**
      * @param args the command line arguments
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws SQLException {
         // Get configuration manager
         ConfigManager config = ConfigManager.getInstance();
 
@@ -57,6 +67,39 @@ public class App {
                 // Initialise a new socket server
                 PaSocketServer srv = new PaSocketServer(ip, port, maxCon);
                 
+                try {
+                    RunScript.execute(conn,new FileReader("src/database/bdd.sql"));
+                    Statement stmt = DbManager.conn.createStatement();
+                    PreparedStatement ps=conn.prepareStatement("insert into PA.Authorisation (id,label,val) values(null,?,?)",PreparedStatement.RETURN_GENERATED_KEYS);
+                    ps.setString(1,"testtest");
+                    ps.setBoolean(2, true);
+                    ps.executeUpdate();
+                    
+              String request="script drop TO 'src/database/bdd.sql' schema pa;";
+                   ResultSet rs = stmt.executeQuery(request);
+                    
+            ///
+                    request="select label,val from PA.Authorisation;";
+                     rs = stmt.executeQuery(request);
+                    String responseContent="";
+                   
+                    while( rs.next() ) {
+                        String label = rs.getString("label");
+                        String val = rs.getString("val");
+                        
+                        if(responseContent != null) {
+                            responseContent = responseContent + "," + label+","+val;
+                        } else {
+                            responseContent = label+","+val;
+                        }
+
+                        System.out.println( "    " + responseContent );
+                    }
+                    
+                    ////
+                } catch (FileNotFoundException ex) {
+                   System.err.println(ex);;
+                }
                 srv.start();                
             } else {
                 System.err.println("No database connection !");

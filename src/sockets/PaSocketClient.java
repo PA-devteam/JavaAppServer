@@ -79,7 +79,8 @@ public class PaSocketClient extends Thread implements Runnable {
                 case LOGIN:
                     PaSocketMessageLogin login=(PaSocketMessageLogin) message;
                     String usrname=login.getUserName();
-                    String request="SELECT username from USERS WHERE username='"+usrname+"'";
+                    String password=login.getUserPassword();
+                    String request="SELECT username from PA.USERS WHERE username='"+usrname+"'";
                     try {
                     // Initialise SQL statement
                     Statement stmt = DbManager.conn.createStatement();
