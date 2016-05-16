@@ -46,61 +46,61 @@ public class App {
             String dbUsr = config.getProperty("db_username");
             // Get database password
             String dbPwd = config.getProperty("db_password");
-            
+
             // Initialise the TCP database server
             ServerManager.init(dbPort);
             // Start the database server
             ServerManager.start();
-            
+
             // Initialise db connection
             DbManager.init(dbUrl, dbUsr, dbPwd);
-            
+
             // Check if there is an established connection to a database
-            if(DbManager.conn != null) {                
+            if(DbManager.conn != null) {
                 // Get socket server ip
                 String ip  = config.getProperty("ss_ip");
                 // Get socket server port
                 int port   = Integer.parseInt(config.getProperty("ss_port"));
                 // Get socket server max connection allowed
                 int maxCon = Integer.parseInt(config.getProperty("ss_max_con"));
-                                
+
                 // Initialise a new socket server
                 PaSocketServer srv = new PaSocketServer(ip, port, maxCon);
-                
+
                 try {
                     RunScript.execute(conn,new FileReader("src/database/bdd.sql"));
                     Statement stmt = DbManager.conn.createStatement();
-                    PreparedStatement ps=conn.prepareStatement("insert into PA.Authorisation (id,label,val) values(null,?,?)",PreparedStatement.RETURN_GENERATED_KEYS);
-                    ps.setString(1,"testtest");
-                    ps.setBoolean(2, true);
-                    ps.executeUpdate();
-                    
-              String request="script drop TO 'src/database/bdd.sql' schema pa;";
-                   ResultSet rs = stmt.executeQuery(request);
-                    
-            ///
-                    request="select label,val from PA.Authorisation;";
-                     rs = stmt.executeQuery(request);
-                    String responseContent="";
-                   
-                    while( rs.next() ) {
-                        String label = rs.getString("label");
-                        String val = rs.getString("val");
-                        
-                        if(responseContent != null) {
-                            responseContent = responseContent + "," + label+","+val;
-                        } else {
-                            responseContent = label+","+val;
-                        }
+//                    PreparedStatement ps=conn.prepareStatement("insert into PA.Authorisation (id,label,val) values(null,?,?)",PreparedStatement.RETURN_GENERATED_KEYS);
+//                    ps.setString(1,"testtest");
+//                    ps.setBoolean(2, true);
+//                    ps.executeUpdate();
 
-                        System.out.println( "    " + responseContent );
-                    }
-                    
+                    String request="script drop TO 'src/database/bdd.sql' schema pa;";
+                    ResultSet rs = stmt.executeQuery(request);
+
+            ///
+//                    request="select label,val from PA.Authorisation;";
+//                     rs = stmt.executeQuery(request);
+//                    String responseContent="";
+//
+//                    while( rs.next() ) {
+//                        String label = rs.getString("label");
+//                        String val = rs.getString("val");
+//
+//                        if(responseContent != null) {
+//                            responseContent = responseContent + "," + label+","+val;
+//                        } else {
+//                            responseContent = label+","+val;
+//                        }
+//
+//                        System.out.println( "    " + responseContent );
+//                    }
+
                     ////
                 } catch (FileNotFoundException ex) {
                    System.err.println(ex);;
                 }
-                srv.start();                
+                srv.start();
             } else {
                 System.err.println("No database connection !");
             }
