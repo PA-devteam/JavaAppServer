@@ -140,7 +140,7 @@ public class PaSocketClient extends Thread implements Runnable {
                         String pwd = register.getUserPassword();
                         String confirmPwd = register.getUserConfirmPassword();
                         int idpassword = 0;
-                        if (pwd.length() > 0 && confirmPwd.length() > 0) {
+                        if (pwd != null && confirmPwd != null && pwd.length() > 0 && confirmPwd.length() > 0) {
                             if (pwd.equals(confirmPwd)) {
                                 // @TODO : Check if a user already exist with provided userName AND/OR email
 
