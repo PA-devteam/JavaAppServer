@@ -68,7 +68,7 @@ public class App {
                 PaSocketServer srv = new PaSocketServer(ip, port, maxCon);
 
                 try {
-                    RunScript.execute(conn,new FileReader("src/database/bdd.sql"));
+                  RunScript.execute(conn,new FileReader("src/database/bdd.sql"));
                     Statement stmt = DbManager.conn.createStatement();
 //                    PreparedStatement ps=conn.prepareStatement("insert into PA.Authorisation (id,label,val) values(null,?,?)",PreparedStatement.RETURN_GENERATED_KEYS);
 //                    ps.setString(1,"testtest");
@@ -97,7 +97,7 @@ public class App {
 //                    }
 
                     ////
-                } catch (FileNotFoundException ex) {
+               } catch (FileNotFoundException ex) {
                    System.err.println(ex);;
                 }
                 srv.start();

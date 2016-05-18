@@ -146,17 +146,9 @@ public class PaSocketClient extends Thread implements Runnable {
 
                                 if (firstName.length() > 0 && lastName.length() > 0 && userName.length() > 0 && email.length() > 0) {
                                     try {
-                                        PreparedStatement ps = DbManager.conn.prepareStatement("insert into PA.SALT (id,val) values(null,?)", PreparedStatement.RETURN_GENERATED_KEYS);
-                                        ps.setString(1, "salt");
-
-                                        ps.executeUpdate();
-                                        ps = DbManager.conn.prepareStatement("insert into PA.EQUATION (id,label,description,isvalid,validatedby,validationdate) values(null,null,null,null,null,null)", PreparedStatement.RETURN_GENERATED_KEYS);
-
-                                        ps.executeUpdate();
-
-                                        ps = DbManager.conn.prepareStatement("insert into PA.Password (id,val,id_salt) values(null,?,?)", PreparedStatement.RETURN_GENERATED_KEYS);
+                                        PreparedStatement ps = DbManager.conn.prepareStatement("insert into PA.Password (val) values(?)", PreparedStatement.RETURN_GENERATED_KEYS);
                                         ps.setString(1, pwd);
-                                        ps.setInt(2, 1);
+                                     
                                         ps.executeUpdate();
                                         String request = "Select id from PA.PASSWORD where val='" + pwd + "';";
                                         Statement stmt = DbManager.conn.createStatement();
@@ -165,20 +157,25 @@ public class PaSocketClient extends Thread implements Runnable {
                                             idpassword = rs.getInt("id");
                                         }
 
-                                        ps = DbManager.conn.prepareStatement("insert into PA.Users (id,firstname,lastname,username,createdate,updatedate,isactive,isdeleted,id_equation,id_password) values(null,?,?,?,?,?,?,?,?,?)", PreparedStatement.RETURN_GENERATED_KEYS);
-                                        ps.setString(1, "firstName");
-                                        ps.setString(2, "lastName");
-                                        ps.setString(3, "userName");
+                                        ps = DbManager.conn.prepareStatement("insert into PA.Users (firstname,lastname,username,createdate,updatedate,isactive,isdeleted,id_password) values(?,?,?,?,?,?,?,?)", PreparedStatement.RETURN_GENERATED_KEYS);
+                                        ps.setString(1, "Romain");
+                                        ps.setString(2, "S");
+                                        ps.setString(3, "RS");
                                         ps.setDate(4, new java.sql.Date(System.currentTimeMillis()));
                                         ps.setDate(5, new java.sql.Date(System.currentTimeMillis()));
                                         ps.setBoolean(6, true);
                                         ps.setBoolean(7, false);
-                                        ps.setInt(8, 1);
-                                        ps.setInt(9, idpassword);
+                                        ps.setInt(8, idpassword);
                                         ps.executeUpdate();
-
+                                        request="SELECT * FROM PA.USERS;";
+                                        String name="";
+                                        rs=stmt.executeQuery(request);
+                                         if (rs.next()) {
+                                          name = rs.getString("firstname");
+                                          System.out.println(name);
+                                        }
                                         request="script drop TO 'src/database/bdd.sql' schema pa;";
-                                        rs = stmt.executeQuery(request);
+                                        stmt.executeQuery(request);
 
     //                                    User usr = new User();
     //                                    usr.setFirstname(firstName);
