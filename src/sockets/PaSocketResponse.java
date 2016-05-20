@@ -5,7 +5,7 @@ import java.util.ArrayList;
 
 public class PaSocketResponse extends PaSocketMessage implements Serializable {
 
-    private ArrayList errors;
+    private ArrayList<PaSocketResponseError> errors;
     private Object content;
 
     /**
@@ -22,8 +22,19 @@ public class PaSocketResponse extends PaSocketMessage implements Serializable {
         this.errors = errors;
     }
 
-    public void addError(Object error) {
+    public void addError(PaSocketResponseError error) {
         this.errors.add(error);
+    }
+    
+    public void addError(String message) {
+        PaSocketResponseError error;
+        
+        error = new PaSocketResponseError();
+        error.setCode(0);
+        error.setMessage(message);
+        error.setCriticity(PaSocketResponseErrorCriticity.NORMAL);
+        
+        this.errors.add(error);        
     }
 
     /**
