@@ -1,5 +1,6 @@
 package sockets;
 
+import errors.PaErrors;
 import java.io.Serializable;
 import java.util.ArrayList;
 
@@ -26,6 +27,10 @@ public class PaSocketResponse extends PaSocketMessage implements Serializable {
         this.errors.add(error);
     }
     
+    public void addError(PaErrors message) {
+        addError(message.toString());
+    }
+    
     public void addError(String message) {
         PaSocketResponseError error;
         
@@ -35,7 +40,7 @@ public class PaSocketResponse extends PaSocketMessage implements Serializable {
         error.setCriticity(PaSocketResponseErrorCriticity.NORMAL);
         
         this.errors.add(error);        
-    }
+    }    
 
     /**
      * @return the content
