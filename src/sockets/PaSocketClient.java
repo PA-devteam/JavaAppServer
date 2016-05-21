@@ -6,6 +6,7 @@ import java.net.Socket;
 import java.sql.*;
 import security.BCrypt; // http://www.mindrot.org/projects/jBCrypt/
 import app.User;
+import errors.PaErrors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -105,22 +106,22 @@ public class PaSocketClient extends Thread implements Runnable {
                                             System.out.println("USER OK");
                                             System.out.println(response);
                                         } else {
-                                            response.addError("Username or password does not match");
+                                            response.addError(PaErrors.LOGIN_MISMATCH);
                                         }
                                     } else {
                                         // Otherwise, user is not available
-                                        response.addError("Cannot find user '" + usr.getUsername() + "'");
+                                        response.addError(PaErrors.LOGIN_MISMATCH);
                                     }
                                 } else {
                                     // Otherwise, user is not available
-                                    response.addError("Cannot find user '" + usr.getUsername() + "'");
+                                    response.addError(PaErrors.LOGIN_MISMATCH);
                                 }
                             } catch (SQLException e) {
                                 System.err.println(e);
-                                response.addError("An error has occured while gathering user from database");
+                                response.addError(PaErrors.SQL_REQUEST_FAILED);
                             }
                         } else {
-                            response.addError("Incorrect parameters");
+                            response.addError(PaErrors.INCORRECT_PARAMETERS);
                         }
                         break;
                     case REGISTER:
@@ -185,24 +186,27 @@ public class PaSocketClient extends Thread implements Runnable {
     //                                    response.setContent(usr);
                                     } catch (SQLException ex) {
                                         Logger.getLogger(PaSocketClient.class.getName()).log(Level.SEVERE, null, ex);
-                                        response.addError("An error has occured while registering user into database");
+                                        response.addError(PaErrors.SQL_REQUEST_FAILED);
                                     }
                                 } else {
-                                    response.addError("Empty parameters");
+                                    response.addError(PaErrors.EMPTY_PARAMETERS);
                                 }
                             } else {
-                                response.addError("Password does not match confirmation");
+                                response.addError(PaErrors.PASSWORD_CONFIRM_MISMATCH);
                             }
                         } else {
-                            response.addError("Incorrect parameters");
+                            response.addError(PaErrors.INCORRECT_PARAMETERS);
                         }
                         break;
                     default:
                         System.err.println("ACTION '" + action + "' NOT SUPPORTED");
-                        response.addError("Unsupported action '" + action + "'");
+                        response.addError(PaErrors.UNSUPPORTED_ACTION);
                         break;
                 }
 
+                System.out.println("SENDING RESPONSE TO CLIENT");
+                System.out.println(response);
+                
                 // Send response to client
                 this.sendObject(response);
             }
@@ -244,9 +248,5 @@ public class PaSocketClient extends Thread implements Runnable {
         this.objectWriter.writeObject(pMsg);
         // Flush the object writer to send the message
         this.objectWriter.flush();
-
-//        System.out.println(this.nameTest + " : " + pMsg.getAction());
-//        System.out.println(pMsg.getErrors());
-//        System.out.println(pMsg.getContent());
     }
 }
