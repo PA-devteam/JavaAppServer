@@ -5,10 +5,11 @@
  ***********************************************************************/
 package app;
 
+import java.io.Serializable;
 import java.util.*;
 
 /** @pdOid 1a1bb685-ad54-42d1-af3b-e83a2ebc3a4a */
-public class User {
+public class User implements Serializable {
    /** @pdOid 10f82ee1-e502-4aa1-9670-42b23dc1dac9 */
    private int id;
    /** @pdOid 22277a53-69c3-41e5-9821-8cb8e8230910 */
