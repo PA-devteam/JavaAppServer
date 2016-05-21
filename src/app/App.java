@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package app;
 
 import static database.DbManager.conn;
@@ -10,19 +5,12 @@ import config.ConfigManager;
 import database.*;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.h2.tools.RunScript;
 import sockets.PaSocketServer;
 
-/**
- *
- * @author florian
- */
 public class App {
 
     /**
@@ -56,11 +44,11 @@ public class App {
             DbManager.init(dbUrl, dbUsr, dbPwd);
 
             // Check if there is an established connection to a database
-            if(DbManager.conn != null) {
+            if (DbManager.conn != null) {
                 // Get socket server ip
-                String ip  = config.getProperty("ss_ip");
+                String ip = config.getProperty("ss_ip");
                 // Get socket server port
-                int port   = Integer.parseInt(config.getProperty("ss_port"));
+                int port = Integer.parseInt(config.getProperty("ss_port"));
                 // Get socket server max connection allowed
                 int maxCon = Integer.parseInt(config.getProperty("ss_max_con"));
 
@@ -68,17 +56,16 @@ public class App {
                 PaSocketServer srv = new PaSocketServer(ip, port, maxCon);
 
                 try {
-                  RunScript.execute(conn,new FileReader("src/database/bdd.sql"));
+                    RunScript.execute(conn, new FileReader("src/database/bdd.sql"));
                     Statement stmt = DbManager.conn.createStatement();
 //                    PreparedStatement ps=conn.prepareStatement("insert into PA.Authorisation (id,label,val) values(null,?,?)",PreparedStatement.RETURN_GENERATED_KEYS);
 //                    ps.setString(1,"testtest");
 //                    ps.setBoolean(2, true);
 //                    ps.executeUpdate();
 
-                    String request="script drop TO 'src/database/bdd.sql' schema pa;";
+                    String request = "script drop TO 'src/database/bdd.sql' schema pa;";
                     ResultSet rs = stmt.executeQuery(request);
 
-            ///
 //                    request="select label,val from PA.Authorisation;";
 //                     rs = stmt.executeQuery(request);
 //                    String responseContent="";
@@ -95,10 +82,8 @@ public class App {
 //
 //                        System.out.println( "    " + responseContent );
 //                    }
-
-                    ////
-               } catch (FileNotFoundException ex) {
-                   System.err.println(ex);;
+                } catch (FileNotFoundException ex) {
+                    System.err.println(ex);
                 }
                 srv.start();
             } else {
