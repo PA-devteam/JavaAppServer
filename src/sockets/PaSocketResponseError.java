@@ -5,11 +5,13 @@
  */
 package sockets;
 
+import java.io.Serializable;
+
 /**
  *
  * @author sebastien
  */
-public class PaSocketResponseError {
+public class PaSocketResponseError implements Serializable {
     private int code;
     private String message;
     private PaSocketResponseErrorCriticity criticity;
@@ -47,4 +49,9 @@ public class PaSocketResponseError {
         this.message   = message;
         this.criticity = criticity;
     }
+    
+    @Override
+    public String toString() {
+        return this.getCode() + " | " + this.getCriticity() + " | " + this.getMessage();
+    }    
 }
