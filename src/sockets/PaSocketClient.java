@@ -133,14 +133,15 @@ public class PaSocketClient extends Thread implements Runnable {
 
                         // Case message to specific case message
                         PaSocketMessageRegister register = (PaSocketMessageRegister) message;
-
-                        String firstName = register.getUserFirstName();
-                        String lastName = register.getUserLastName();
-                        String userName = register.getUserName();
-                        String email = register.getUserEmail();
-                        String pwd = register.getUserPassword();
+                        
+                        String firstName  = register.getUserFirstName();
+                        String lastName   = register.getUserLastName();
+                        String userName   = register.getUserName();
+                        String email      = register.getUserEmail();
+                        String pwd        = register.getUserPassword();
                         String confirmPwd = register.getUserConfirmPassword();
                         int idpassword = 0;
+                        
                         if (pwd != null && confirmPwd != null && pwd.length() > 0 && confirmPwd.length() > 0) {
                             if (pwd.equals(confirmPwd)) {
                                 // @TODO : Check if a user already exist with provided userName AND/OR email
@@ -178,12 +179,12 @@ public class PaSocketClient extends Thread implements Runnable {
                                         request="script drop TO 'src/database/bdd.sql' schema pa;";
                                         stmt.executeQuery(request);
 
-    //                                    User usr = new User();
-    //                                    usr.setFirstname(firstName);
-    //                                    usr.setLastname(lastName);
-    //                                    usr.setUsername(userName);
-    //                                    
-    //                                    response.setContent(usr);
+                                        User usr = new User();
+                                        usr.setFirstname(firstName);
+                                        usr.setLastname(lastName);
+                                        usr.setUsername(userName);
+                                        
+                                        response.setContent(usr);
                                     } catch (SQLException ex) {
                                         Logger.getLogger(PaSocketClient.class.getName()).log(Level.SEVERE, null, ex);
                                         response.addError(PaErrors.SQL_REQUEST_FAILED);
