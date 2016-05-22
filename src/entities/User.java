@@ -3,7 +3,7 @@
  * Author:  Florian
  * Purpose: Defines the Class User
  ***********************************************************************/
-package app;
+package entities;
 
 import java.io.Serializable;
 import java.util.*;

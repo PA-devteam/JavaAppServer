@@ -1,4 +1,4 @@
-package app;
+package entities;
 
 /***********************************************************************
  * Module:  Element.java

@@ -5,7 +5,7 @@ import java.io.*;
 import java.net.Socket;
 import java.sql.*;
 import security.BCrypt; // http://www.mindrot.org/projects/jBCrypt/
-import app.User;
+import entities.User;
 import errors.PaErrors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
