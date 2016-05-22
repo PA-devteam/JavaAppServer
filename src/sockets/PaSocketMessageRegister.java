@@ -1,13 +1,11 @@
 package sockets;
 
-public class PaSocketMessageRegister extends PaSocketMessage {
+public class PaSocketMessageRegister extends PaSocketMessageLogin {
 
-    private String userFirstName;
-    private String userLastName;
-    private String userName;
-    private String userPassword;
-    private String userConfirmPassword;
-    private String userEmail;
+    protected String userFirstName;
+    protected String userLastName;
+    protected String userConfirmPassword;
+    protected String userEmail;
 
     public String getUserFirstName() {
         return userFirstName;
@@ -23,22 +21,6 @@ public class PaSocketMessageRegister extends PaSocketMessage {
 
     public void setUserLastName(String userLastName) {
         this.userLastName = userLastName;
-    }
-
-    public String getUserName() {
-        return userName;
-    }
-
-    public void setUserName(String userName) {
-        this.userName = userName;
-    }
-
-    public String getUserPassword() {
-        return userPassword;
-    }
-
-    public void setUserPassword(String userPassword) {
-        this.userPassword = userPassword;
     }
 
     public String getUserConfirmPassword() {
@@ -58,15 +40,15 @@ public class PaSocketMessageRegister extends PaSocketMessage {
     }
 
     public PaSocketMessageRegister() {
-        super(PaSocketAction.REGISTER);
+        super();
+        this.action = PaSocketAction.REGISTER;
     }
 
     public PaSocketMessageRegister(String userFirstName, String userLastName, String userName, String userPassword, String userConfirmPassword, String userEmail) {
-        super(PaSocketAction.REGISTER);
+        super(userName, userPassword);
+        this.action = PaSocketAction.REGISTER;
         this.userFirstName = userFirstName;
         this.userLastName = userLastName;
-        this.userName = userName;
-        this.userPassword = userPassword;
         this.userConfirmPassword = userConfirmPassword;
         this.userEmail = userEmail;
     }

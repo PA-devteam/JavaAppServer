@@ -2,8 +2,8 @@ package sockets;
 
 public class PaSocketMessageLogin extends PaSocketMessage {
 
-    private String userName;
-    private String userPassword;
+    protected String userName;
+    protected String userPassword;
 
     public String getUserName() {
         return userName;
