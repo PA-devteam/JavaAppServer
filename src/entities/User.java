@@ -30,7 +30,17 @@ public class User implements Serializable {
    /** @pdRoleInfo migr=no name=Password assc=userPassword mult=1..1 */
    public Password userPassword;
    /** @pdRoleInfo migr=no name=Role assc=userRole mult=0..* */
-   public Role[] userRole;
+   public ArrayList<Role> userRole;
+
+    public ArrayList<Role> getUserRole() {
+        return userRole;
+    }
+
+    public void setUserRole(ArrayList<Role> userRole) {
+        this.userRole = userRole;
+    }
+
+   
    /** @pdRoleInfo migr=no name=Equation assc=userEquation mult=0..* */
    public Equation[] userEquation;
 
