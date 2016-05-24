@@ -6,6 +6,15 @@ public class PaSocketMessageRegister extends PaSocketMessageLogin {
     protected String userLastName;
     protected String userConfirmPassword;
     protected String userEmail;
+     protected String roles;
+
+    public String getRoles() {
+        return roles;
+    }
+
+    public void setRoles(String roles) {
+        this.roles = roles;
+    }
 
     public String getUserFirstName() {
         return userFirstName;

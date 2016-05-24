@@ -1,6 +1,7 @@
 package sockets;
 
 import database.DbManager;
+import entities.Role;
 import java.io.*;
 import java.net.Socket;
 import java.sql.*;
@@ -147,6 +148,7 @@ public class PaSocketClient extends Thread implements Runnable {
                         String email = register.getUserEmail();
                         String pwd = register.getUserPassword();
                         String confirmPwd = register.getUserConfirmPassword();
+                        String role = register.getRoles();
 
                         int idpassword = 0;
 
@@ -184,20 +186,42 @@ public class PaSocketClient extends Thread implements Runnable {
                                         ps.setInt(8, idpassword);
                                         ps.setString(9, email);
                                         ps.executeUpdate();
-                                        request = "SELECT * FROM PA.USERS;";
-                                        String name = "";
+                                        request = "SELECT id FROM PA.USERS WHERE username='"+userName+"';";
                                         rs = stmt.executeQuery(request);
-                                        if (rs.next()) {
-                                            name = rs.getString("username");
-                                            System.out.println("UserName:" + name);
+                                        int idUser=0;
+                                        int idRoles=0;
+                                        while(rs.next()){
+                                           idUser = rs.getInt("id");
                                         }
+                                        request = "SELECT id FROM PA.ROLESTATUT WHERE label='"+role+"';";
+                                        rs = stmt.executeQuery(request);
+                                         while(rs.next()){
+                                           idRoles = rs.getInt("id");
+                                        }
+                                        ps = DbManager.conn.prepareStatement("insert into PA.USERROLE values(?,?)");
+                                         ps.setInt(1, idUser);
+                                          ps.setInt(2, idRoles);
+                                        ps.executeUpdate();
+                                        
+                                        
                                         // request = "script drop TO 'src/database/bdd.sql' schema pa;";
                                         // stmt.executeQuery(request);
-
-                                        User usr = new User();
+                                          User usr = new User();
                                         usr.setFirstname(firstName);
                                         usr.setLastname(lastName);
                                         usr.setUsername(userName);
+                                        rs=this.executeRequete("select r.id,r.label FROM PA.USERS u, PA.USERROLE ur, PA.ROLESTATUT r  WHERE u.username='"+userName+"'and u.id=ur.id and ur.rol_id=r.id ");
+                                        ArrayList<Role> usrRole=new ArrayList<>();
+                                        
+                                        while(rs.next()){
+                                            Role temp=new Role();
+                                            temp.setId(rs.getInt("id"));
+                                            temp.setLabel(rs.getString("label"));
+                                            usrRole.add(temp);
+                                        }
+                                       usr.setUserRole(usrRole);
+                                      
+                                        
 
                                         response.setContent(usr);
                                     } catch (SQLException ex) {
@@ -283,4 +307,11 @@ public class PaSocketClient extends Thread implements Runnable {
         // Flush the object writer to send the message
         this.objectWriter.flush();
     }
+    
+    public ResultSet executeRequete(String request) throws SQLException{
+        Statement stmt = DbManager.conn.createStatement();
+        ResultSet rs = stmt.executeQuery(request);
+       return rs; 
+    }
+    
 }
