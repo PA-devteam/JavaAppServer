@@ -1,0 +1,8 @@
+[user]
+	name = Khensit90
+[user]
+	email = romain.spenlihauer@gmail.com
+[filter "lfs"]
+	smudge = git-lfs smudge -- %f
+	required = true
+	clean = git-lfs clean -- %f
