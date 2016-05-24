@@ -139,15 +139,19 @@ public class PaSocketClient extends Thread implements Runnable {
                         String email = register.getUserEmail();
                         String pwd = register.getUserPassword();
                         String confirmPwd = register.getUserConfirmPassword();
+                        
                         int idpassword = 0;
                         if (pwd != null && confirmPwd != null && pwd.length() > 0 && confirmPwd.length() > 0) {
-                            if (pwd.equals(confirmPwd)) {
+                            String hashedPwd = BCrypt.hashpw(pwd, BCrypt.gensalt());
+                            String hashedConfirmPwd = BCrypt.hashpw(confirmPwd, BCrypt.gensalt());
+                            
+                            if (BCrypt.checkpw(hashedPwd, hashedConfirmPwd)) {
                                 // @TODO : Check if a user already exist with provided userName AND/OR email
 
                                 if (firstName.length() > 0 && lastName.length() > 0 && userName.length() > 0 && email.length() > 0) {
                                     try {
                                         PreparedStatement ps = DbManager.conn.prepareStatement("insert into PA.Password (val) values(?)", PreparedStatement.RETURN_GENERATED_KEYS);
-                                        ps.setString(1, pwd);
+                                        ps.setString(1, hashedPwd);
                                      
                                         ps.executeUpdate();
                                         String request = "Select id from PA.PASSWORD where val='" + pwd + "';";
@@ -157,22 +161,23 @@ public class PaSocketClient extends Thread implements Runnable {
                                             idpassword = rs.getInt("id");
                                         }
 
-                                        ps = DbManager.conn.prepareStatement("insert into PA.Users (firstname,lastname,username,createdate,updatedate,isactive,isdeleted,id_password) values(?,?,?,?,?,?,?,?)", PreparedStatement.RETURN_GENERATED_KEYS);
-                                        ps.setString(1, "Romain");
-                                        ps.setString(2, "S");
-                                        ps.setString(3, "RS");
+                                        ps = DbManager.conn.prepareStatement("insert into PA.Users (firstname,lastname,username,createdate,updatedate,isactive,isdeleted,id_password,email) values(?,?,?,?,?,?,?,?,?)", PreparedStatement.RETURN_GENERATED_KEYS);
+                                        ps.setString(1, firstName);
+                                        ps.setString(2, lastName );
+                                        ps.setString(3, userName);
                                         ps.setDate(4, new java.sql.Date(System.currentTimeMillis()));
                                         ps.setDate(5, new java.sql.Date(System.currentTimeMillis()));
                                         ps.setBoolean(6, true);
                                         ps.setBoolean(7, false);
                                         ps.setInt(8, idpassword);
+                                        ps.setString(9, email);
                                         ps.executeUpdate();
                                         request="SELECT * FROM PA.USERS;";
                                         String name="";
                                         rs=stmt.executeQuery(request);
                                          if (rs.next()) {
-                                          name = rs.getString("firstname");
-                                          System.out.println(name);
+                                          name = rs.getString("username");
+                                          System.out.println("UserName:"+name);
                                         }
                                         request="script drop TO 'src/database/bdd.sql' schema pa;";
                                         stmt.executeQuery(request);
@@ -185,6 +190,7 @@ public class PaSocketClient extends Thread implements Runnable {
     //                                    response.setContent(usr);
                                     } catch (SQLException ex) {
                                         Logger.getLogger(PaSocketClient.class.getName()).log(Level.SEVERE, null, ex);
+                                        
                                         response.addError("An error has occured while registering user into database");
                                     }
                                 } else {
