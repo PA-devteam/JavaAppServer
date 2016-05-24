@@ -1,4 +1,4 @@
-package app;
+package entities;
 
 /***********************************************************************
  * Module:  Comment.java
@@ -6,7 +6,7 @@ package app;
  * Purpose: Defines the Class Comment
  ***********************************************************************/
 
-import app.User;
+import entities.User;
 import java.util.*;
 
 /** @pdOid f9587a5c-7ca3-4509-a278-fff8206872f5 */

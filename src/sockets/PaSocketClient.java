@@ -5,7 +5,9 @@ import java.io.*;
 import java.net.Socket;
 import java.sql.*;
 import security.BCrypt; // http://www.mindrot.org/projects/jBCrypt/
-import app.User;
+import entities.User;
+import errors.PaErrors;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -37,7 +39,7 @@ public class PaSocketClient extends Thread implements Runnable {
             // Initialise stream handlers for read & send actions
             initStreamHandlers();
 
-            while(true) {
+            while (true) {
 
                 // Waiting message from client
                 PaSocketMessage message = (PaSocketMessage) this.readObject();
@@ -68,8 +70,8 @@ public class PaSocketClient extends Thread implements Runnable {
 
                             try {
                                 // Create SQL request
-                                String request = "SELECT u.firstname,u.lastname,u.username,u.createDate,u.updatedate,u.isActive,u.isDeleted,p.val FROM PA.USERS u,PA.PASSWORD p WHERE u.username='" + username + "' and u.ID_PASSWORD=p.ID";
-
+                                String request = "SELECT * FROM PA.USERS u,PA.PASSWORD p WHERE u.ID_PASSWORD=p.ID and u.username='" + username + "';";
+                                //String request = "SELECT * FROM PA.USERS;";
                                 // Initialise SQL statement
                                 Statement stmt = DbManager.conn.createStatement();
 
@@ -79,48 +81,54 @@ public class PaSocketClient extends Thread implements Runnable {
                                 User usr = new User();
                                 String usrHashed = "";
 
-                                if (rs.next()) {
-                                    // Process data from SQL result set
-                                    while (rs.next()) {
-                                        // Build new User entity
-                                        usr.setUsername(rs.getString("u.firstname"));
-                                        usr.setUsername(rs.getString("u.lastname"));
-                                        usr.setCreateDate(rs.getDate("u.createDate"));
-                                        usr.setUpdate(rs.getDate("u.updatedate"));
-                                        usr.setIsActive(rs.getBoolean("u.isActive"));
-                                        usr.setIsDeleted(rs.getBoolean("u.isDeleted"));
-
-                                        // Get hashed password from db
-                                        usrHashed = rs.getString("p.val");
-                                    }
-
-                                    // Close statement
-                                    stmt.close();
-
-                                    // Check if the user is active and not marked as deleted
-                                    if (usr.getIsActive() && !usr.getIsDeleted()) {
-                                        // Check if hashed password match the one from db
-                                        if (BCrypt.checkpw(usrHashed, hashed)) {
-                                            response.setContent(usr);
-                                            System.out.println("USER OK");
-                                            System.out.println(response);
-                                        } else {
-                                            response.addError("Username or password does not match");
-                                        }
-                                    } else {
-                                        // Otherwise, user is not available
-                                        response.addError("Cannot find user '" + usr.getUsername() + "'");
-                                    }
-                                } else {
-                                    // Otherwise, user is not available
-                                    response.addError("Cannot find user '" + usr.getUsername() + "'");
+                                // if (rs.next()) {
+                                // Process data from SQL result set
+                                while (rs.next()) {
+                                    // Build new User entity
+                                    usr.setFirstname(rs.getString("firstname"));
+                                    usr.setUsername(rs.getString("username"));
+                                    usr.setLastname(rs.getString("lastname"));
+                                    usr.setCreateDate(rs.getDate("createDate"));
+                                    usr.setUpdate(rs.getDate("updatedate"));
+                                    usr.setIsActive(rs.getBoolean("isActive"));
+                                    usr.setIsDeleted(rs.getBoolean("isDeleted"));
+                                    System.out.println(rs.getString("username"));
+                                    System.out.println(rs);
+                                    // Get hashed password from db
+                                    usrHashed = rs.getString("val");
                                 }
+
+                                // Close statement
+                                stmt.close();
+
+                                // Check if the user is active and not marked as deleted
+                                // if (usr.getIsActive() && !usr.getIsDeleted()) {
+                                // Check if hashed password match the one from db
+                                //if (BCrypt.checkpw(usrHashed, hashed)) {
+                                response.setContent(usr);
+                                System.out.println(usr.getUsername());
+                                System.out.println(usr.getIsDeleted());
+                                System.out.println("USER OK");
+                                System.out.println(response);
+
+                                // } //else {
+                                //                                            response.addError(PaErrors.LOGIN_MISMATCH);
+                                //                                        }
+                                //                                    } else {
+                                //                                        // Otherwise, user is not available
+                                //                                        response.addError(PaErrors.LOGIN_MISMATCH);
+                                //}
+                                //    }
+//                                else {
+//                                    // Otherwise, user is not available
+//                                    response.addError(PaErrors.LOGIN_MISMATCH);
+//                                }
                             } catch (SQLException e) {
                                 System.err.println(e);
-                                response.addError("An error has occured while gathering user from database");
+                                response.addError(PaErrors.SQL_REQUEST_FAILED);
                             }
                         } else {
-                            response.addError("Incorrect parameters");
+                            response.addError(PaErrors.INCORRECT_PARAMETERS);
                         }
                         break;
                     case REGISTER:
@@ -139,20 +147,24 @@ public class PaSocketClient extends Thread implements Runnable {
                         String email = register.getUserEmail();
                         String pwd = register.getUserPassword();
                         String confirmPwd = register.getUserConfirmPassword();
-                        
+
                         int idpassword = 0;
+
                         if (pwd != null && confirmPwd != null && pwd.length() > 0 && confirmPwd.length() > 0) {
                             String hashedPwd = BCrypt.hashpw(pwd, BCrypt.gensalt());
                             String hashedConfirmPwd = BCrypt.hashpw(confirmPwd, BCrypt.gensalt());
-                            
-                            if (BCrypt.checkpw(hashedPwd, hashedConfirmPwd)) {
+
+                            System.out.println(hashedPwd);
+                            System.out.println(hashedConfirmPwd);
+                            System.out.println(BCrypt.checkpw(hashedPwd, hashedConfirmPwd));
+                            if (pwd.equals(confirmPwd)) {
                                 // @TODO : Check if a user already exist with provided userName AND/OR email
 
                                 if (firstName.length() > 0 && lastName.length() > 0 && userName.length() > 0 && email.length() > 0) {
                                     try {
                                         PreparedStatement ps = DbManager.conn.prepareStatement("insert into PA.Password (val) values(?)", PreparedStatement.RETURN_GENERATED_KEYS);
-                                        ps.setString(1, hashedPwd);
-                                     
+                                        ps.setString(1, pwd);
+
                                         ps.executeUpdate();
                                         String request = "Select id from PA.PASSWORD where val='" + pwd + "';";
                                         Statement stmt = DbManager.conn.createStatement();
@@ -160,10 +172,10 @@ public class PaSocketClient extends Thread implements Runnable {
                                         if (rs.next()) {
                                             idpassword = rs.getInt("id");
                                         }
-
+                                        System.out.println("pass" + idpassword);
                                         ps = DbManager.conn.prepareStatement("insert into PA.Users (firstname,lastname,username,createdate,updatedate,isactive,isdeleted,id_password,email) values(?,?,?,?,?,?,?,?,?)", PreparedStatement.RETURN_GENERATED_KEYS);
                                         ps.setString(1, firstName);
-                                        ps.setString(2, lastName );
+                                        ps.setString(2, lastName);
                                         ps.setString(3, userName);
                                         ps.setDate(4, new java.sql.Date(System.currentTimeMillis()));
                                         ps.setDate(5, new java.sql.Date(System.currentTimeMillis()));
@@ -172,42 +184,62 @@ public class PaSocketClient extends Thread implements Runnable {
                                         ps.setInt(8, idpassword);
                                         ps.setString(9, email);
                                         ps.executeUpdate();
-                                        request="SELECT * FROM PA.USERS;";
-                                        String name="";
-                                        rs=stmt.executeQuery(request);
-                                         if (rs.next()) {
-                                          name = rs.getString("username");
-                                          System.out.println("UserName:"+name);
+                                        request = "SELECT * FROM PA.USERS;";
+                                        String name = "";
+                                        rs = stmt.executeQuery(request);
+                                        if (rs.next()) {
+                                            name = rs.getString("username");
+                                            System.out.println("UserName:" + name);
                                         }
-                                        request="script drop TO 'src/database/bdd.sql' schema pa;";
-                                        stmt.executeQuery(request);
+                                        // request = "script drop TO 'src/database/bdd.sql' schema pa;";
+                                        // stmt.executeQuery(request);
 
-    //                                    User usr = new User();
-    //                                    usr.setFirstname(firstName);
-    //                                    usr.setLastname(lastName);
-    //                                    usr.setUsername(userName);
-    //                                    
-    //                                    response.setContent(usr);
+                                        User usr = new User();
+                                        usr.setFirstname(firstName);
+                                        usr.setLastname(lastName);
+                                        usr.setUsername(userName);
+
+                                        response.setContent(usr);
                                     } catch (SQLException ex) {
                                         Logger.getLogger(PaSocketClient.class.getName()).log(Level.SEVERE, null, ex);
-                                        
-                                        response.addError("An error has occured while registering user into database");
+                                        response.addError(PaErrors.SQL_REQUEST_FAILED);
                                     }
                                 } else {
-                                    response.addError("Empty parameters");
+                                    response.addError(PaErrors.EMPTY_PARAMETERS);
                                 }
                             } else {
-                                response.addError("Password does not match confirmation");
+                                response.addError(PaErrors.PASSWORD_CONFIRM_MISMATCH);
                             }
                         } else {
-                            response.addError("Incorrect parameters");
+                            response.addError(PaErrors.INCORRECT_PARAMETERS);
                         }
+                        break;
+                    case INIT:
+                        String request = "SELECT * FROM PA.ROLESTATUT ;";
+                        Statement stmt;
+                        try {
+                            stmt = DbManager.conn.createStatement();
+                            ResultSet rs = stmt.executeQuery(request);
+                            ArrayList<String> roles = new ArrayList<>();
+                            while (rs.next()) {
+                                roles.add(rs.getString("label"));
+                            }
+                            response.setContent(roles);
+                            response.setAction(PaSocketAction.INIT);
+                        } catch (SQLException ex) {
+                            Logger.getLogger(PaSocketClient.class.getName()).log(Level.SEVERE, null, ex);
+                            response.addError(PaErrors.SQL_REQUEST_FAILED);
+                        }
+
                         break;
                     default:
                         System.err.println("ACTION '" + action + "' NOT SUPPORTED");
-                        response.addError("Unsupported action '" + action + "'");
+                        response.addError(PaErrors.UNSUPPORTED_ACTION);
                         break;
                 }
+
+                System.out.println("SENDING RESPONSE TO CLIENT");
+                System.out.println(response);
 
                 // Send response to client
                 this.sendObject(response);
@@ -250,9 +282,5 @@ public class PaSocketClient extends Thread implements Runnable {
         this.objectWriter.writeObject(pMsg);
         // Flush the object writer to send the message
         this.objectWriter.flush();
-
-//        System.out.println(this.nameTest + " : " + pMsg.getAction());
-//        System.out.println(pMsg.getErrors());
-//        System.out.println(pMsg.getContent());
     }
 }
