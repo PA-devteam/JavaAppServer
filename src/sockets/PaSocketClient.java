@@ -54,6 +54,8 @@ public class PaSocketClient extends Thread implements Runnable, IInitialisable {
                 // Initialise new socket reponse
                 PaSocketResponse response = new PaSocketResponse();
                 
+                boolean sendBack = true;
+                
                 // Handle action
                 switch (action) {
                     case LOGIN:
@@ -139,6 +141,7 @@ public class PaSocketClient extends Thread implements Runnable, IInitialisable {
                         break;
                     case LOGOUT:
                         isAuth = false;
+                        sendBack = false;
                         break;
                     case REGISTER:
                         // @TODO : optimise message by switching content from fields to a single 'User' field
@@ -269,11 +272,13 @@ public class PaSocketClient extends Thread implements Runnable, IInitialisable {
                         break;
                 }
 
-                System.out.println("SENDING RESPONSE TO CLIENT");
-                System.out.println(response);
+                if(sendBack) {
+                    System.out.println("SENDING RESPONSE TO CLIENT");
+                    System.out.println(response);
 
-                // Send response to client
-                this.sendObject(response);
+                    // Send response to client
+                    this.sendObject(response);
+                }
             }
         } catch (IOException | ClassNotFoundException e) {
             System.err.println(e);
