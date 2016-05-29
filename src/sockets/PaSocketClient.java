@@ -8,11 +8,12 @@ import java.sql.*;
 import security.BCrypt; // http://www.mindrot.org/projects/jBCrypt/
 import entities.User;
 import errors.PaErrors;
+import interfaces.IInitialisable;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class PaSocketClient extends Thread implements Runnable {
+public class PaSocketClient extends Thread implements Runnable, IInitialisable {
 
     private Socket sock;
     private ObjectOutputStream objectWriter;
@@ -20,15 +21,16 @@ public class PaSocketClient extends Thread implements Runnable {
     private String nameTest;
 
     public PaSocketClient() {
-        this.init();
+        init();
     }
 
     public PaSocketClient(Socket pSocket) {
-        this.init();
+        init();
         this.sock = pSocket;
     }
 
-    private void init() {
+    @Override
+    public void init() {
         // Init writer and reader for Object communication
         this.objectWriter = null;
         this.objectReader = null;
