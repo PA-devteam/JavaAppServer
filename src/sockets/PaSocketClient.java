@@ -19,13 +19,14 @@ public class PaSocketClient extends Thread implements Runnable, IInitialisable {
     private ObjectOutputStream objectWriter;
     private ObjectInputStream objectReader;
     private String nameTest;
-
+    private boolean isAuth = false;
+    
     public PaSocketClient() {
-        init();
+        this.init();
     }
 
     public PaSocketClient(Socket pSocket) {
-        init();
+        this.init();
         this.sock = pSocket;
     }
 
@@ -52,7 +53,7 @@ public class PaSocketClient extends Thread implements Runnable, IInitialisable {
 
                 // Initialise new socket reponse
                 PaSocketResponse response = new PaSocketResponse();
-
+                
                 // Handle action
                 switch (action) {
                     case LOGIN:
@@ -113,6 +114,8 @@ public class PaSocketClient extends Thread implements Runnable, IInitialisable {
                                 System.out.println(usr.getIsDeleted());
                                 System.out.println("USER OK");
                                 System.out.println(response);
+                                
+                                isAuth = true;
 
                                 // } //else {
                                 //                                            response.addError(PaErrors.LOGIN_MISMATCH);
@@ -133,6 +136,9 @@ public class PaSocketClient extends Thread implements Runnable, IInitialisable {
                         } else {
                             response.addError(PaErrors.INCORRECT_PARAMETERS);
                         }
+                        break;
+                    case LOGOUT:
+                        isAuth = false;
                         break;
                     case REGISTER:
                         // @TODO : optimise message by switching content from fields to a single 'User' field
@@ -223,7 +229,7 @@ public class PaSocketClient extends Thread implements Runnable, IInitialisable {
                                         }
                                        usr.setUserRole(usrRole);
                                       
-                                        
+                                        isAuth = true;
 
                                         response.setContent(usr);
                                     } catch (SQLException ex) {
@@ -256,7 +262,6 @@ public class PaSocketClient extends Thread implements Runnable, IInitialisable {
                             Logger.getLogger(PaSocketClient.class.getName()).log(Level.SEVERE, null, ex);
                             response.addError(PaErrors.SQL_REQUEST_FAILED);
                         }
-
                         break;
                     default:
                         System.err.println("ACTION '" + action + "' NOT SUPPORTED");
@@ -313,7 +318,6 @@ public class PaSocketClient extends Thread implements Runnable, IInitialisable {
     public ResultSet executeRequete(String request) throws SQLException{
         Statement stmt = DbManager.conn.createStatement();
         ResultSet rs = stmt.executeQuery(request);
-       return rs; 
+        return rs; 
     }
-    
 }
