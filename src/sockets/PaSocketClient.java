@@ -98,14 +98,26 @@ public class PaSocketClient extends Thread implements Runnable, IInitialisable {
                                     usr.setUpdate(rs.getDate("updatedate"));
                                     usr.setIsActive(rs.getBoolean("isActive"));
                                     usr.setIsDeleted(rs.getBoolean("isDeleted"));
-                                    System.out.println(rs.getString("username"));
-                                    System.out.println(rs);
+                                    usr.setEmail(rs.getString("email"));
+                                    
                                     // Get hashed password from db
                                     usrHashed = rs.getString("val");
                                 }
 
                                 // Close statement
                                 stmt.close();
+                                
+                                rs=this.executeRequete("select r.id,r.label FROM PA.USERS u, PA.USERROLE ur, PA.ROLESTATUT r  WHERE u.username='"+username+"'and u.id=ur.id and ur.rol_id=r.id ");
+                                ArrayList<Role> usrRole=new ArrayList<>();
+
+                                while(rs.next()){
+                                    Role temp=new Role();
+                                    temp.setId(rs.getInt("id"));
+                                    temp.setLabel(rs.getString("label"));
+                                    usrRole.add(temp);
+                                }
+                               usr.setUserRole(usrRole);                                
+                                
 
                                 // Check if the user is active and not marked as deleted
                                 // if (usr.getIsActive() && !usr.getIsDeleted()) {
@@ -217,10 +229,11 @@ public class PaSocketClient extends Thread implements Runnable, IInitialisable {
                                         
                                         // request = "script drop TO 'src/database/bdd.sql' schema pa;";
                                         // stmt.executeQuery(request);
-                                          User usr = new User();
+                                        User usr = new User();
                                         usr.setFirstname(firstName);
                                         usr.setLastname(lastName);
                                         usr.setUsername(userName);
+                                        usr.setEmail(email);
                                         rs=this.executeRequete("select r.id,r.label FROM PA.USERS u, PA.USERROLE ur, PA.ROLESTATUT r  WHERE u.username='"+userName+"'and u.id=ur.id and ur.rol_id=r.id ");
                                         ArrayList<Role> usrRole=new ArrayList<>();
                                         
