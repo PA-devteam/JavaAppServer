@@ -10,6 +10,12 @@ public enum PaSocketAction {
     // Miscellaneous (divers)
     MISC,
     // Init 
-    INIT 
+    INIT ,
+    //Updateequation
+    UPDATEEQUATION,
+    //CreateEquation,
+    CREATEEQUATION,
+    //DeleteEquation
+    DELETEEQUATION
 }
 
