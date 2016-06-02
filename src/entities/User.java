@@ -31,6 +31,8 @@ public class User implements Serializable {
    public Password userPassword;
    /** @pdRoleInfo migr=no name=Role assc=userRole mult=0..* */
    public ArrayList<Role> userRole;
+   
+    private String email;
 
     public ArrayList<Role> getUserRole() {
         return userRole;
@@ -141,5 +143,13 @@ public class User implements Serializable {
     public void setUpdate(Date update) {
         this.update = update;
     }
+    
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }    
 
 }

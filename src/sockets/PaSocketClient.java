@@ -9,16 +9,18 @@ import java.sql.*;
 import security.BCrypt; // http://www.mindrot.org/projects/jBCrypt/
 import entities.User;
 import errors.PaErrors;
+import interfaces.IInitialisable;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class PaSocketClient extends Thread implements Runnable {
+public class PaSocketClient extends Thread implements Runnable, IInitialisable {
 
     private Socket sock;
     private ObjectOutputStream objectWriter;
     private ObjectInputStream objectReader;
     private String nameTest;
+    private boolean isAuth = false;
 
     public PaSocketClient() {
         this.init();
@@ -29,7 +31,8 @@ public class PaSocketClient extends Thread implements Runnable {
         this.sock = pSocket;
     }
 
-    private void init() {
+    @Override
+    public void init() {
         // Init writer and reader for Object communication
         this.objectWriter = null;
         this.objectReader = null;
@@ -51,6 +54,8 @@ public class PaSocketClient extends Thread implements Runnable {
 
                 // Initialise new socket reponse
                 PaSocketResponse response = new PaSocketResponse();
+
+                boolean sendBack = true;
 
                 // Handle action
                 switch (action) {
@@ -93,47 +98,27 @@ public class PaSocketClient extends Thread implements Runnable {
                                     }
                                     rs.close();
                                     rs = this.executeRequete("select r.id,r.label FROM PA.USERS u, PA.USERROLE ur, PA.ROLESTATUT r  WHERE u.username='" + username + "'and u.id=ur.id and ur.rol_id=r.id ");
-                                        ArrayList<Role> usrRole = new ArrayList<>();
-                                        if (rs.isBeforeFirst()) {
-                                            while (rs.next()) {
-                                                Role temp = new Role();
-                                                temp.setId(rs.getInt("id"));
-                                                temp.setLabel(rs.getString("label"));
-                                                usrRole.add(temp);
+                                    ArrayList<Role> usrRole = new ArrayList<>();
+                                    if (rs.isBeforeFirst()) {
+                                        while (rs.next()) {
+                                            Role temp = new Role();
+                                            temp.setId(rs.getInt("id"));
+                                            temp.setLabel(rs.getString("label"));
+                                            usrRole.add(temp);
 
-                                            }
-                                            
-                                        } else {
-                                            System.out.println("Probleme recupartion LISTE role");
                                         }
 
-                                        usr.setUserRole(usrRole);
+                                    } else {
+                                        System.out.println("Probleme recupartion LISTE role");
+                                    }
+                                    // Close statement
+                                    //stmt.close();
 
-                                    // Check if the user is active and not marked as deleted
-                                    // if (usr.getIsActive() && !usr.getIsDeleted()) {
-                                    // Check if hashed password match the one from db
-                                   // if (BCrypt.checkpw(usrHashed, hashed)) {
-                                        response.setContent(usr);
-                                        System.out.println(usr.getUsername());
-                                        System.out.println(usr.getIsDeleted());
-                                        System.out.println("USER OK");
-                                        System.out.println(response);
-                                    //} else {
-                                    //    response.addError(PaErrors.INCORRECT_PARAMETERS);
-                                  //  }
+                                    usr.setUserRole(usrRole);
 
-                                    // } //else {
-                                    //                                            response.addError(PaErrors.LOGIN_MISMATCH);
-                                    //                                        }
-                                    //                                    } else {
-                                    //                                        // Otherwise, user is not available
-                                    //                                        response.addError(PaErrors.LOGIN_MISMATCH);
-                                    //}
-                                    //    }
-//                                else {
-//                                    // Otherwise, user is not available
-//                                    response.addError(PaErrors.LOGIN_MISMATCH);
-//                                }
+                                    response.setContent(usr);
+
+                                    isAuth = true;
                                 } else {
                                     response.addError(PaErrors.INCORRECT_PARAMETERS);
                                 }
@@ -144,6 +129,10 @@ public class PaSocketClient extends Thread implements Runnable {
                         } else {
                             response.addError(PaErrors.INCORRECT_PARAMETERS);
                         }
+                        break;
+                    case LOGOUT:
+                        isAuth = false;
+                        sendBack = false;
                         break;
                     case REGISTER:
                         // @TODO : optimise message by switching content from fields to a single 'User' field
@@ -227,13 +216,17 @@ public class PaSocketClient extends Thread implements Runnable {
                                         ps.setInt(1, identifiant);
                                         ps.setInt(2, roleId);
                                         ps.executeUpdate();
+
                                         ps.close();
                                         recupKey.close();
 
-                                        //recuperation Liste des rôles
+                                        //User usr = new User();
                                         usr.setFirstname(firstName);
                                         usr.setLastname(lastName);
                                         usr.setUsername(userName);
+                                          isAuth = true;
+                                            usr.setEmail(email);
+
                                         recupKey = this.executeRequete("select r.id,r.label FROM PA.USERS u, PA.USERROLE ur, PA.ROLESTATUT r  WHERE u.username='" + userName + "'and u.id=ur.id and ur.rol_id=r.id ");
                                         ArrayList<Role> usrRole = new ArrayList<>();
                                         if (recupKey.isBeforeFirst()) {
@@ -243,7 +236,14 @@ public class PaSocketClient extends Thread implements Runnable {
                                                 temp.setLabel(recupKey.getString("label"));
                                                 usrRole.add(temp);
 
+                                                
+
+                                               
+
                                             }
+                                           
+                                               
+                                             
                                         } else {
                                             System.out.println("Probleme recupartion LISTE role");
                                         }
@@ -252,7 +252,6 @@ public class PaSocketClient extends Thread implements Runnable {
                                     } catch (SQLException ex) {
                                         Logger.getLogger(PaSocketClient.class.getName()).log(Level.SEVERE, null, ex);
                                     }
-                                    //////
 
                                     // User usr = inserUser(firstName, lastName, pwd, userName, email, role);
                                     response.setContent(usr);
@@ -282,29 +281,29 @@ public class PaSocketClient extends Thread implements Runnable {
                             Logger.getLogger(PaSocketClient.class.getName()).log(Level.SEVERE, null, ex);
                             response.addError(PaErrors.SQL_REQUEST_FAILED);
                         }
-
                         break;
-                        
-                        //IN PROGRESS
+
+                    //IN PROGRESS
                     case UPDATEEQUATION:
                         PaSocketMessageEquation updateEquation = (PaSocketMessageEquation) message;
-                        Equation encours=updateEquation.getEquation();
-                        
+                        Equation encours = updateEquation.getEquation();
+
                         break;
-                        
-                            
-                        //
+
+                    //
                     default:
                         System.err.println("ACTION '" + action + "' NOT SUPPORTED");
                         response.addError(PaErrors.UNSUPPORTED_ACTION);
                         break;
                 }
 
-                System.out.println("SENDING RESPONSE TO CLIENT");
-                System.out.println(response);
+                if (sendBack) {
+                    System.out.println("SENDING RESPONSE TO CLIENT");
+                    System.out.println(response);
 
-                // Send response to client
-                this.sendObject(response);
+                    // Send response to client
+                    this.sendObject(response);
+                }
             }
         } catch (IOException | ClassNotFoundException e) {
             System.err.println(e);
@@ -349,6 +348,7 @@ public class PaSocketClient extends Thread implements Runnable {
     public ResultSet executeRequete(String request) throws SQLException {
         Statement stmt = DbManager.conn.createStatement();
         ResultSet rs = stmt.executeQuery(request);
+
         return rs;
     }
 
@@ -424,5 +424,4 @@ public class PaSocketClient extends Thread implements Runnable {
         }
         return usr;
     }
-
 }
