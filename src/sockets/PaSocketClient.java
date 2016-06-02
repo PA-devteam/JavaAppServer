@@ -1,6 +1,7 @@
 package sockets;
 
 import database.DbManager;
+import entities.Equation;
 import entities.Role;
 import java.io.*;
 import java.net.Socket;
@@ -283,6 +284,16 @@ public class PaSocketClient extends Thread implements Runnable {
                         }
 
                         break;
+                        
+                        //IN PROGRESS
+                    case UPDATEEQUATION:
+                        PaSocketMessageEquation updateEquation = (PaSocketMessageEquation) message;
+                        Equation encours=updateEquation.getEquation();
+                        
+                        break;
+                        
+                            
+                        //
                     default:
                         System.err.println("ACTION '" + action + "' NOT SUPPORTED");
                         response.addError(PaErrors.UNSUPPORTED_ACTION);
