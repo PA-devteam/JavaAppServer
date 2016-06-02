@@ -407,3 +407,12 @@ Caused by: java.lang.IllegalStateException: The file is locked: nio:C:/Users/Rom
 	at org.h2.mvstore.FileStore.open(FileStore.java:172)
 	at org.h2.mvstore.MVStore.<init>(MVStore.java:342)
 	... 20 more
+2016-05-31 21:40:40 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Column "mail" not found [42122-191]
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:345)
+	at org.h2.message.DbException.get(DbException.java:179)
+	at org.h2.message.DbException.get(DbException.java:155)
+	at org.h2.jdbc.JdbcResultSet.getColumnIndex(JdbcResultSet.java:3129)
+	at org.h2.jdbc.JdbcResultSet.get(JdbcResultSet.java:3217)
+	at org.h2.jdbc.JdbcResultSet.getString(JdbcResultSet.java:303)
+	at sockets.PaSocketClient.run(PaSocketClient.java:101)
