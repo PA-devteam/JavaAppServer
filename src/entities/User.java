@@ -16,6 +16,14 @@ public class User implements Serializable {
    private String firstname;
    /** @pdOid bef1c562-4054-4c45-a23e-7ef1581e2178 */
    private String lastname;
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
    /** @pdOid 03aefccf-a7ab-4934-bc36-0eb363ad7dba */
    private String username;
    /** @pdOid ce747382-01fb-4cd2-b0f6-0a77fe1db2bb */

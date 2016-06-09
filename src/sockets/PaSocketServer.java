@@ -1,5 +1,6 @@
 package sockets;
 
+import equations.EquationsManager;
 import java.io.IOException;
 import java.net.BindException;
 import java.net.InetAddress;
@@ -30,8 +31,12 @@ public class PaSocketServer extends Thread implements Runnable {
 
     @Override
     public void run() {
+        EquationsManager Emanager=new EquationsManager();
+        Emanager.init();
+        
         while (true) {
             try {
+                
                 // Create client socket
                 Socket client = this.srv.accept();
                 System.out.println("Client received");

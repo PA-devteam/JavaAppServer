@@ -8,6 +8,7 @@ import java.net.Socket;
 import java.sql.*;
 import security.BCrypt; // http://www.mindrot.org/projects/jBCrypt/
 import entities.User;
+import equations.EquationsManager;
 import errors.PaErrors;
 import interfaces.IInitialisable;
 import java.util.ArrayList;
@@ -43,7 +44,7 @@ public class PaSocketClient extends Thread implements Runnable, IInitialisable {
         try {
             // Initialise stream handlers for read & send actions
             initStreamHandlers();
-
+            
             while (true) {
 
                 // Waiting message from client
@@ -133,6 +134,12 @@ public class PaSocketClient extends Thread implements Runnable, IInitialisable {
                     case LOGOUT:
                         isAuth = false;
                         sendBack = false;
+                        break;
+                        case LISTEQUATION:
+                       response.setAction(PaSocketAction.LISTEQUATION);
+                       ArrayList<Equation> ListEquations=EquationsManager.getEquationsList();
+                       response.setContent(ListEquations);
+                       
                         break;
                     case REGISTER:
                         // @TODO : optimise message by switching content from fields to a single 'User' field
@@ -287,6 +294,11 @@ public class PaSocketClient extends Thread implements Runnable, IInitialisable {
                     case UPDATEEQUATION:
                         PaSocketMessageEquation updateEquation = (PaSocketMessageEquation) message;
                         Equation encours = updateEquation.getEquation();
+                        EquationsManager uneEquation=new EquationsManager();
+                       uneEquation.update(encours);
+                       response.setAction(PaSocketAction.REFRESH);
+                       
+                       
 
                         break;
 

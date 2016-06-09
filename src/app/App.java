@@ -3,6 +3,7 @@ package app;
 import static database.DbManager.conn;
 import config.ConfigManager;
 import database.*;
+import equations.EquationsManager;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.sql.ResultSet;
@@ -54,7 +55,8 @@ public class App {
 
                 // Initialise a new socket server
                 PaSocketServer srv = new PaSocketServer(ip, port, maxCon);
-
+                 // EquationsManager Emanager=new EquationsManager();
+                //Emanager.init();
                // try {
                     //RunScript.execute(conn, new FileReader("src/database/bdd.sql"));
                    // Statement stmt = DbManager.conn.createStatement();
