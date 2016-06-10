@@ -48,6 +48,10 @@ public class PaSocketMessageRegister extends PaSocketMessageLogin {
         this.userEmail = userEmail;
     }
 
+      public void setActionInfo(){
+        this.action = PaSocketAction.UPDATEINFO;
+    }
+
     public PaSocketMessageRegister() {
         super();
         this.action = PaSocketAction.REGISTER;

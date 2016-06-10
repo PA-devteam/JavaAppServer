@@ -6,10 +6,14 @@ import java.net.BindException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class PaSocketServer extends Thread implements Runnable {
 
     private ServerSocket srv;
+    private static ArrayList<PaSocketClient> clients = new ArrayList<>();
 
     public PaSocketServer(String pIp, int pPort, int pMaxCon) {
         try {
@@ -31,8 +35,7 @@ public class PaSocketServer extends Thread implements Runnable {
 
     @Override
     public void run() {
-        EquationsManager Emanager=new EquationsManager();
-        Emanager.init();
+        EquationsManager.init();
         
         while (true) {
             try {
@@ -47,6 +50,18 @@ public class PaSocketServer extends Thread implements Runnable {
                 paClient.start();
             } catch (IOException e) {
                 System.err.println(e);
+            }
+        }
+    }
+    
+    public static void broadcast() {
+        for(PaSocketClient soc : clients) {
+            try {
+                PaSocketResponse res = new PaSocketResponse();
+                res.setAction(PaSocketAction.MISC);
+                soc.sendObject(res);
+            } catch (IOException ex) {
+                Logger.getLogger(PaSocketServer.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }

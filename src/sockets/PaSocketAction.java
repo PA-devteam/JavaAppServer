@@ -19,6 +19,8 @@ public enum PaSocketAction {
     DELETEEQUATION,
     //List of Equation
     LISTEQUATION,
-     REFRESH
+     REFRESH,
+       UPDATEINFO,
+       EQUATIONBYID
 }
 
